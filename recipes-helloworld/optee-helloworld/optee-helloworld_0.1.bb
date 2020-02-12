@@ -32,11 +32,12 @@ do_compile() {
 do_install () {
     mkdir -p ${D}${nonarch_base_libdir}/optee_armtz
     mkdir -p ${D}${bindir}
-    install -D -p -m0755 ${S}/host/optee_example_hello_world ${D}${bindir}
-    install -D -p -m0444 ${S}/ta/*.elf ${D}${nonarch_base_libdir}/optee_armtz
+    install -m 755 ${S}/host/optee_example_hello_world ${D}${bindir}/
+    install -m 444 ${S}/ta/*.elf ${D}${nonarch_base_libdir}/optee_armtz
 }
 
 FILES_${PN} += "${nonarch_base_libdir}/optee_armtz/"
+INSANE_SKIP_${PN}-dev = "ldflags"
 
 # Imports machine specific configs from staging to build
 PACKAGE_ARCH = "${MACHINE_ARCH}"
