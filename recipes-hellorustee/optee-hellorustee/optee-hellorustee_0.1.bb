@@ -8,7 +8,7 @@ DEPENDS = "optee-client optee-os python3-pycrypto-native"
 
 inherit python3native
 
-SRC_URI = "git:///home/zondax/hello-rustee.git;protocol=file;rev=master"
+SRC_URI = "git://github.com/Zondax/hello-rustee.git;rev=master"
 # or use SRC_URI = "file:///home/zondax/hello-rustee.git/src"
 
 S = "${WORKDIR}/git/src"
@@ -16,7 +16,7 @@ S = "${WORKDIR}/git/src"
 OPTEE_CLIENT_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 TEEC_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 TA_DEV_KIT_DIR = "${STAGING_INCDIR}/optee/export-user_ta"
-CARGO_BIN = "/home/zondax/.cargo/bin"
+CARGO_BIN = "${HOME}/.cargo/bin"
 
 EXTRA_OEMAKE = " TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR} \
                  OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
@@ -28,6 +28,7 @@ EXTRA_OEMAKE = " TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR} \
                "
 
 do_compile() {
+    export PATH=${CARGO_BIN}:$PATH
     oe_runmake
 }
 
