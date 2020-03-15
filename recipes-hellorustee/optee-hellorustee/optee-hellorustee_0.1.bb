@@ -5,6 +5,7 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
 DEPENDS = "optee-client optee-os python3-pycrypto-native"
+DEPENDS_imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native"
 
 inherit python3native
 
@@ -15,17 +16,27 @@ S = "${WORKDIR}/git/src"
 
 OPTEE_CLIENT_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 TEEC_EXPORT = "${STAGING_DIR_HOST}${prefix}"
-TA_DEV_KIT_DIR = "${STAGING_INCDIR}/optee/export-user_ta"
-CARGO_BIN = "${HOME}/.cargo/bin"
 
-EXTRA_OEMAKE = " TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR} \
-                 OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
-                 TEEC_EXPORT=${TEEC_EXPORT} \
-                 HOST_CROSS_COMPILE=${TARGET_PREFIX} \
-                 TA_CROSS_COMPILE=${TARGET_PREFIX} \
-                 CARGO_BIN=${CARGO_BIN} \
-                 V=1 \
-               "
+# stm32mp1
+EXTRA_OEMAKE = " \
+    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
+    OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
+    TEEC_EXPORT=${TEEC_EXPORT} \
+    HOST_CROSS_COMPILE=${TARGET_PREFIX} \
+    TA_CROSS_COMPILE=${TARGET_PREFIX} \
+    RUST_TARGET=armv7-unknown-linux-gnueabihf \
+    V=1 \ 
+    "
+
+EXTRA_OEMAKE_imx8mqevk = " \
+    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
+    OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
+    TEEC_EXPORT=${TEEC_EXPORT} \
+    HOST_CROSS_COMPILE=${TARGET_PREFIX} \
+    TA_CROSS_COMPILE=${TARGET_PREFIX} \
+    RUST_TARGET=aarch64-unknown-linux-gnu \
+    V=1 \ 
+    "
 
 do_compile() {
     export PATH=${CARGO_BIN}:$PATH
@@ -40,6 +51,8 @@ do_install () {
 }
 
 FILES_${PN} += "${nonarch_base_libdir}/optee_armtz/"
+
+INSANE_SKIP_${PN} = "ldflags"
 INSANE_SKIP_${PN}-dev = "ldflags"
 
 # Imports machine specific configs from staging to build
