@@ -39,7 +39,7 @@ EXTRA_OEMAKE_imx8mqevk = " \
     "
 
 do_compile() {
-    export PATH=${CARGO_BIN}:$PATH
+    export PATH=${HOME}/.cargo/bin:$PATH
     oe_runmake
 }
 
