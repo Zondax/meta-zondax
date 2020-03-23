@@ -25,7 +25,7 @@ EXTRA_OEMAKE = " \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=armv7-unknown-linux-gnueabihf \
-    V=1 \ 
+    V=1 \
     "
 
 EXTRA_OEMAKE_imx8mqevk = " \
@@ -35,7 +35,7 @@ EXTRA_OEMAKE_imx8mqevk = " \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
-    V=1 \ 
+    V=1 \
     "
 
 do_compile() {
