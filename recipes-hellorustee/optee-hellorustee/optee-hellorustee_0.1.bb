@@ -4,7 +4,7 @@ HOMEPAGE = "https://github.com/Zondax/hello-rustee"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-DEPENDS = "optee-client optee-os python3-pycrypto-native"
+DEPENDS = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native"
 DEPENDS_imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native"
 
 inherit python3native
