@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 
 DEPENDS = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native"
 DEPENDS_imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native"
+DEPENDS_stm32mp1 = "optee-client optee-os python3-pycrypto-native"
 
 inherit python3native
 
