@@ -38,6 +38,15 @@ EXTRA_OEMAKE_imx8mqevk = " \
     RUST_TARGET=aarch64-unknown-linux-gnu \
     V=1 \
     "
+EXTRA_OEMAKE_qemu-optee64 = " \
+    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
+    OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
+    TEEC_EXPORT=${TEEC_EXPORT} \
+    HOST_CROSS_COMPILE=${TARGET_PREFIX} \
+    TA_CROSS_COMPILE=${TARGET_PREFIX} \
+    RUST_TARGET=aarch64-unknown-linux-gnu \
+    V=1 \
+    "
 
 do_compile() {
     export PATH=${HOME}/.cargo/bin:$PATH
