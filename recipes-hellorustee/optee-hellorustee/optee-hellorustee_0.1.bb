@@ -18,7 +18,7 @@ S = "${WORKDIR}/git/src"
 OPTEE_CLIENT_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 TEEC_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 
-# stm32mp1
+# stm32mp1 or qemu_v7
 EXTRA_OEMAKE = " \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
@@ -39,7 +39,7 @@ EXTRA_OEMAKE_imx8mqevk = " \
     V=1 \
     "
 EXTRA_OEMAKE_qemu-optee64 = " \
-    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
+    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
