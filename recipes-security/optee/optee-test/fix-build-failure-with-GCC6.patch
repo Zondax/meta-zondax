@@ -14,7 +14,7 @@ index 368d826..7960e5e 100644
  	  -Wshadow -Wstrict-prototypes -Wswitch-default \
  	  -Wwrite-strings \
 -	  -Wno-missing-field-initializers -Wno-format-zero-length
-+	  -Wno-missing-field-initializers -Wno-format-zero-length \
++	  -Wno-missing-field-initializers -Wno-format-zero-length -Wno-error=format-overflow \
 +	  -Wno-unused-const-variable
  endif
  

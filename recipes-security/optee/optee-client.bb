@@ -10,6 +10,7 @@ inherit pythonnative systemd
 
 SRC_URI = "git://github.com/OP-TEE/optee_client.git \
            file://tee-supplicant.service \
+           file://optee \
 	"
 
 S = "${WORKDIR}/git"
@@ -35,5 +36,11 @@ do_install() {
               ${WORKDIR}/tee-supplicant.service
 
         install -D -p -m0644 ${WORKDIR}/tee-supplicant.service ${D}${systemd_system_unitdir}/tee-supplicant.service
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES','sysvinit','true','false',d)}; then
+	install -D -p -m0755 ${WORKDIR}/optee ${D}/etc/init.d/optee
+	install -d ${D}/etc/rcS.d
+	ln -sf ../init.d/optee ${D}/etc/rcS.d/S30optee
     fi
 }
