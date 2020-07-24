@@ -7,6 +7,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 DEPENDS = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native"
 DEPENDS_imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native"
 DEPENDS_pico-imx8mq = "optee-client optee-os python3-pycrypto-native"
+DEPENDS_flex-imx8mm = "optee-client optee-os python3-pycrypto-native"
 DEPENDS_stm32mp1 = "optee-client optee-os python3-pycrypto-native"
 
 inherit python3native
@@ -31,6 +32,16 @@ EXTRA_OEMAKE = " \
     "
 
 EXTRA_OEMAKE_imx8mqevk = " \
+    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
+    OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
+    TEEC_EXPORT=${TEEC_EXPORT} \
+    HOST_CROSS_COMPILE=${TARGET_PREFIX} \
+    TA_CROSS_COMPILE=${TARGET_PREFIX} \
+    RUST_TARGET=aarch64-unknown-linux-gnu \
+    V=1 \
+    "
+
+EXTRA_OEMAKE_flex-imx8mm = " \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
     TEEC_EXPORT=${TEEC_EXPORT} \
