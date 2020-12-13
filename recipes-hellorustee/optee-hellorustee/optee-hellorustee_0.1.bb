@@ -27,8 +27,6 @@ EXTRA_OEMAKE = " \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    UTEE_ROOT=${STAGING_INCDIR}/optee/export-user_ta \
-    TEEC_ROOT=${TEEC_EXPORT}/usr \
     RUST_TARGET=armv7-unknown-linux-gnueabihf \
     V=1 \
     "
@@ -39,8 +37,6 @@ EXTRA_OEMAKE_imx8mqevk = " \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    UTEE_ROOT=${STAGING_INCDIR}/optee/export-user_ta \
-    TEEC_ROOT=${TEEC_EXPORT} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
     V=1 \
     "
@@ -51,8 +47,6 @@ EXTRA_OEMAKE_flex-imx8mm = " \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    UTEE_ROOT=${STAGING_INCDIR}/optee/export-user_ta \
-    TEEC_ROOT=${TEEC_EXPORT} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
     V=1 \
     "
@@ -63,8 +57,6 @@ EXTRA_OEMAKE_pico-imx8mq = " \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    UTEE_ROOT=${STAGING_INCDIR}/optee/export-user_ta \
-    TEEC_ROOT=${TEEC_EXPORT} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
     V=1 \
     "
@@ -75,8 +67,6 @@ EXTRA_OEMAKE_qemu-optee64 = " \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    UTEE_ROOT=${STAGING_INCDIR}/optee/export-user_ta \
-    TEEC_ROOT=${TEEC_EXPORT} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
     V=1 \
     "
