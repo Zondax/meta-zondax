@@ -4,21 +4,17 @@ HOMEPAGE = "https://github.com/OP-TEE/optee_test"
 LICENSE = "BSD-2-Clause & GPLv2"
 LIC_FILES_CHKSUM = "file://${S}/LICENSE.md;md5=daa2bcccc666345ab8940aab1315a4fa"
 
-DEPENDS = "optee-client optee-os python-pycrypto-native openssl"
+DEPENDS = "optee-client optee-os python3-pycryptodomex-native python3-pycrypto-native libgcc"
 
-inherit pythonnative
+inherit python3native
 
-PV = "3.3.0+git${SRCPV}"
+PV = "3.14.0+git${SRCPV}"
 
-SRC_URI = "git://github.com/OP-TEE/optee_test.git \
-           file://fix-build-failure-with-GCC6.patch \
-           file://0002-Correct-support-of-32bits.patch \
-           file://0003-xtest-prevent-unexpected-build-warning-with-strncpy.patch \
-           file://0004-regression-4011-correct-potential-overflow.patch \
-          "
+SRC_URI = "git://github.com/OP-TEE/optee_test.git"
+
+SRCREV = "f2eb88affbb7f028561b4fd5cbd049d5d704f741"
+
 S = "${WORKDIR}/git"
-
-SRCREV = "5659bceaa001cf8271327d8c0005c8ef3371fdfc"
 
 OPTEE_CLIENT_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 TEEC_EXPORT         = "${STAGING_DIR_HOST}${prefix}"
@@ -32,6 +28,7 @@ EXTRA_OEMAKE = " TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR} \
                  CROSS_COMPILE_TA=${TARGET_PREFIX} \
                  V=1 \
                  CFG_TEE_CLIENT_LOAD_PATH=${libdir} \
+                 LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
                  "
 
 
