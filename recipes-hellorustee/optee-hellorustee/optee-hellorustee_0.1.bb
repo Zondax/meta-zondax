@@ -4,11 +4,11 @@ HOMEPAGE = "https://github.com/Zondax/hello-rustee"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-DEPENDS = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native"
-DEPENDS_imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native"
-DEPENDS_pico-imx8mq = "optee-client optee-os python3-pycrypto-native"
-DEPENDS_flex-imx8mm = "optee-client optee-os python3-pycrypto-native"
-DEPENDS_stm32mp1 = "optee-client optee-os python3-pycrypto-native"
+DEPENDS = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
+DEPENDS_imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native libgcc"
+DEPENDS_pico-imx8mq = "optee-client optee-os python3-pycrypto-native libgcc"
+DEPENDS_flex-imx8mm = "optee-client optee-os python3-pycrypto-native libgcc"
+DEPENDS_stm32mp1 = "optee-client optee-os python3-pycrypto-native libgcc"
 
 inherit python3native
 
@@ -28,6 +28,7 @@ EXTRA_OEMAKE = " \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=armv7-unknown-linux-gnueabihf \
+    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
     V=1 \
     "
 
@@ -38,6 +39,7 @@ EXTRA_OEMAKE_imx8mqevk = " \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
+    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
     V=1 \
     "
 
@@ -48,6 +50,7 @@ EXTRA_OEMAKE_flex-imx8mm = " \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
+    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
     V=1 \
     "
 
@@ -58,6 +61,7 @@ EXTRA_OEMAKE_pico-imx8mq = " \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
+    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
     V=1 \
     "
 
@@ -68,6 +72,7 @@ EXTRA_OEMAKE_qemu-optee64 = " \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=aarch64-unknown-linux-gnu \
+    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
     V=1 \
     "
 
