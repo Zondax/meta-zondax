@@ -1,0 +1,746 @@
+From cb4d5cd1e18aa0a530a8dbb25446806686ad926b Mon Sep 17 00:00:00 2001
+From: zondax <info@zondax.ch>
+Date: Sun, 22 Aug 2021 22:03:10 +0000
+Subject: [PATCH] regression: remove tests for the supplicant plugin framework
+
+---
+ CMakeLists.txt                                |   1 -
+ Makefile                                      |  11 +-
+ host/supp_plugin/CMakeLists.txt               |   9 -
+ host/supp_plugin/Makefile                     |  24 ---
+ host/supp_plugin/include/test_supp_plugin.h   |  17 --
+ host/supp_plugin/test_supp_plugin.c           |  93 ----------
+ host/xtest/CMakeLists.txt                     |   1 -
+ host/xtest/Makefile                           |   2 -
+ host/xtest/regression_1000.c                  | 128 -------------
+ host/xtest/xtest_test.c                       |   2 -
+ host/xtest/xtest_test.h                       |   1 -
+ ta/CMakeLists.txt                             |   1 -
+ ta/Makefile                                   |   1 -
+ ta/supp_plugin/Android.mk                     |   4 -
+ ta/supp_plugin/Makefile                       |   2 -
+ ta/supp_plugin/include/ta_supp_plugin.h       |  20 ---
+ .../include/user_ta_header_defines.h          |  17 --
+ ta/supp_plugin/sub.mk                         |   3 -
+ ta/supp_plugin/ta_entry.c                     | 169 ------------------
+ 19 files changed, 1 insertion(+), 505 deletions(-)
+ delete mode 100644 host/supp_plugin/CMakeLists.txt
+ delete mode 100644 host/supp_plugin/Makefile
+ delete mode 100644 host/supp_plugin/include/test_supp_plugin.h
+ delete mode 100644 host/supp_plugin/test_supp_plugin.c
+ delete mode 100644 ta/supp_plugin/Android.mk
+ delete mode 100644 ta/supp_plugin/Makefile
+ delete mode 100644 ta/supp_plugin/include/ta_supp_plugin.h
+ delete mode 100644 ta/supp_plugin/include/user_ta_header_defines.h
+ delete mode 100644 ta/supp_plugin/sub.mk
+ delete mode 100644 ta/supp_plugin/ta_entry.c
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6b91f23..4cc1f38 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -31,4 +31,3 @@ endif(CCACHE_FOUND)
+ 
+ add_subdirectory (ta)
+ add_subdirectory (host/xtest)
+-add_subdirectory (host/supp_plugin)
+diff --git a/Makefile b/Makefile
+index 36ad8ca..93fba7d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -27,7 +27,7 @@ CROSS_COMPILE_TA ?= $(CROSS_COMPILE)
+ 
+ .PHONY: all
+ ifneq ($(wildcard $(TA_DEV_KIT_DIR)/host_include/conf.mk),)
+-all: xtest ta test_plugin
++all: xtest ta
+ else
+ all:
+ 	$(q)echo "TA_DEV_KIT_DIR is not correctly defined" && false
+@@ -46,17 +46,11 @@ ta:
+ 			  O=$(out-dir) \
+ 			  $@
+ 
+-.PHONY: test_plugin
+-test_plugin:
+-	$(q)$(MAKE) -C host/supp_plugin CROSS_COMPILE="$(CROSS_COMPILE_HOST)" \
+-			     O=$(out-dir)
+-
+ .PHONY: clean
+ ifneq ($(wildcard $(TA_DEV_KIT_DIR)/host_include/conf.mk),)
+ clean:
+ 	$(q)$(MAKE) -C host/xtest O=$(out-dir) $@
+ 	$(q)$(MAKE) -C ta O=$(out-dir) $@
+-	$(q)$(MAKE) -C host/supp_plugin O=$(out-dir) $@
+ else
+ clean:
+ 	$(q)echo "TA_DEV_KIT_DIR is not correctly defined"
+@@ -79,9 +73,6 @@ install:
+ 	$(echo) '  INSTALL ${DESTDIR}/bin'
+ 	$(q)mkdir -p ${DESTDIR}/bin
+ 	$(q)cp -a $(out-dir)/xtest/xtest ${DESTDIR}/bin
+-	$(echo) '  INSTALL ${DESTDIR}/$(CFG_TEE_PLUGIN_LOAD_PATH)'
+-	$(q)mkdir -p ${DESTDIR}/$(CFG_TEE_PLUGIN_LOAD_PATH)
+-	$(q)cp $(out-dir)/supp_plugin/*.plugin ${DESTDIR}/$(CFG_TEE_PLUGIN_LOAD_PATH)
+ 
+ .PHONY: cscope
+ cscope:
+diff --git a/host/supp_plugin/CMakeLists.txt b/host/supp_plugin/CMakeLists.txt
+deleted file mode 100644
+index 63972bb..0000000
+--- a/host/supp_plugin/CMakeLists.txt
++++ /dev/null
+@@ -1,9 +0,0 @@
+-project (f07bfc66-958c-4a15-99c0-260e4e7375dd.plugin C)
+-
+-set (CFG_TEE_PLUGIN_LOAD_PATH "/usr/lib/tee-supplicant/plugins/")
+-set (CMAKE_SHARED_LIBRARY_PREFIX "")
+-
+-add_library(${PROJECT_NAME} SHARED test_supp_plugin.c)
+-target_include_directories(${PROJECT_NAME} PRIVATE ./include)
+-
+-install (TARGETS ${PROJECT_NAME} DESTINATION ${CFG_TEE_PLUGIN_LOAD_PATH})
+diff --git a/host/supp_plugin/Makefile b/host/supp_plugin/Makefile
+deleted file mode 100644
+index 2439010..0000000
+--- a/host/supp_plugin/Makefile
++++ /dev/null
+@@ -1,24 +0,0 @@
+-PLUGIN_UUID = f07bfc66-958c-4a15-99c0-260e4e7375dd
+-
+-PLUGIN			= $(PLUGIN_UUID).plugin
+-PLUGIN_SRS		= $(wildcard ./*.c)
+-PLUGIN_OBJ		= $(patsubst %.c, $(O)/supp_plugin/%.o, $(PLUGIN_SRS))
+-PLUGIN_INCLUDES_DIR	= $(CURDIR)/include $(OPTEE_CLIENT_EXPORT)/include
+-
+-PLUGIN_INCLUDES		= $(addprefix -I, $(PLUGIN_INCLUDES_DIR))
+-PLUGIN_CCFLAGS		= $(CFLAGS) -Wall -fPIC
+-PLUGIN_LDFLAGS		= $(LDFLAGS) -shared
+-
+-CC			?= $(CROSS_COMPILE)gcc
+-
+-$(O)/supp_plugin/$(PLUGIN): $(PLUGIN_OBJ)
+-	$(q)$(CC) $(PLUGIN_LDFLAGS) $(PLUGIN_OBJ) -o $@
+-
+-$(O)/supp_plugin/%.o: $(CURDIR)/%.c
+-	$(q)mkdir -p $(O)/supp_plugin
+-	@echo '  CC      $<'
+-	$(q)$(CC) $(PLUGIN_INCLUDES) $(PLUGIN_CCFLAGS) -c $< -o $@
+-
+-.PHONY: clean
+-clean:
+-	$(q)$(RM) -rf $(O)/supp_plugin/
+diff --git a/host/supp_plugin/include/test_supp_plugin.h b/host/supp_plugin/include/test_supp_plugin.h
+deleted file mode 100644
+index 2e7e961..0000000
+--- a/host/supp_plugin/include/test_supp_plugin.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/* SPDX-License-Identifier: BSD-2-Clause */
+-/*
+- * Copyright (c) 2021 Open Mobile Platform LLC
+- */
+-
+-#ifndef TEST_SUPP_PLUGIN_H
+-#define TEST_SUPP_PLUGIN_H
+-
+-#define TEST_PLUGIN_UUID { 0xf07bfc66, 0x958c, 0x4a15, \
+-	{ 0x99, 0xc0, 0x26, 0x0e, 0x4e, 0x73, 0x75, 0xdd } }
+-
+-#define TEST_PLUGIN_CMD_PING		0
+-#define TEST_PLUGIN_CMD_PASS_VALUES	1
+-#define TEST_PLUGIN_CMD_WRITE_ARR	2
+-#define TEST_PLUGIN_CMD_GET_ARR		3
+-
+-#endif /* TEST_SUPP_PLUGIN_H */
+diff --git a/host/supp_plugin/test_supp_plugin.c b/host/supp_plugin/test_supp_plugin.c
+deleted file mode 100644
+index 56e79b1..0000000
+--- a/host/supp_plugin/test_supp_plugin.c
++++ /dev/null
+@@ -1,93 +0,0 @@
+-// SPDX-License-Identifier: BSD-2-Clause
+-/*
+- * Copyright (c) 2021, Open Mobile Platform LLC
+- */
+-
+-#include <stdio.h>
+-#include <stdint.h>
+-#include <stddef.h>
+-#include <string.h>
+-#include <stdlib.h>
+-#include <limits.h>
+-#include <tee_plugin_method.h>
+-#include <test_supp_plugin.h>
+-#include <unistd.h>
+-
+-static TEEC_Result pass_values(unsigned int sub_cmd, void *data,
+-			      size_t data_len, size_t *out_len)
+-{
+-	struct add_op {
+-		uint32_t a;
+-		uint32_t b;
+-	} *values = NULL;
+-
+-	values = (struct add_op *)data;
+-	*out_len = sizeof(uint32_t);
+-
+-	if (sub_cmd == '+')
+-		values->a = values->a + values->b;
+-	else
+-		values->a = values->a - values->b;
+-
+-	return TEEC_SUCCESS;
+-}
+-
+-static TEEC_Result proc_input_arr(unsigned int sub_cmd, void *data,
+-				  size_t data_len, size_t *out_len)
+-{
+-	(void)sub_cmd;
+-
+-	size_t i = 0;
+-	uint8_t sum = 0;
+-	uint8_t *d = data;
+-
+-	for (; i < data_len; ++i)
+-		sum += d[i];
+-
+-	d[0] = sum;
+-	*out_len = sizeof(sum);
+-
+-	return TEEC_SUCCESS;
+-}
+-
+-static TEEC_Result get_test_arr(unsigned int sub_cmd, void *data,
+-				size_t data_len, size_t *out_len)
+-{
+-	(void)sub_cmd;
+-	char test_arr[] = "Array from plugin";
+-	size_t test_size = sizeof(test_arr);
+-
+-	if (data_len < test_size)
+-		return TEEC_ERROR_GENERIC;
+-
+-	memcpy(data, test_arr, test_size);
+-	*out_len = test_size;
+-
+-	return TEEC_SUCCESS;
+-}
+-
+-static TEEC_Result test_plugin_invoke(unsigned int cmd, unsigned int sub_cmd,
+-				      void *data, size_t data_len,
+-				      size_t *out_len)
+-{
+-	switch (cmd) {
+-	case TEST_PLUGIN_CMD_PING:
+-		return TEEC_SUCCESS;
+-	case TEST_PLUGIN_CMD_PASS_VALUES:
+-		return pass_values(sub_cmd, data, data_len, out_len);
+-	case TEST_PLUGIN_CMD_WRITE_ARR:
+-		return proc_input_arr(sub_cmd, data, data_len, out_len);
+-	case TEST_PLUGIN_CMD_GET_ARR:
+-		return get_test_arr(sub_cmd, data, data_len, out_len);
+-	default:
+-		break;
+-	}
+-
+-	return TEEC_ERROR_NOT_SUPPORTED;
+-}
+-
+-struct plugin_method plugin_method = {
+-	.name = "test",
+-	.uuid = TEST_PLUGIN_UUID,
+-	.invoke = test_plugin_invoke,
+-};
+diff --git a/host/xtest/CMakeLists.txt b/host/xtest/CMakeLists.txt
+index 7442425..68f37e2 100644
+--- a/host/xtest/CMakeLists.txt
++++ b/host/xtest/CMakeLists.txt
+@@ -116,7 +116,6 @@ target_compile_options (${PROJECT_NAME} PRIVATE -include conf.h)
+ 
+ target_include_directories(${PROJECT_NAME}
+ 	PRIVATE .
+-	PRIVATE ../supp_plugin/include
+ 	PRIVATE adbg/include
+ 	PRIVATE ${OPTEE_TEST_SDK}/host_include
+ 	PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+diff --git a/host/xtest/Makefile b/host/xtest/Makefile
+index ae6e21c..53f0d14 100644
+--- a/host/xtest/Makefile
++++ b/host/xtest/Makefile
+@@ -102,7 +102,6 @@ CFLAGS += -DCFG_PKCS11_TA
+ endif
+ CFLAGS += -I./
+ CFLAGS += -I./adbg/include
+-CFLAGS += -I../supp_plugin/include
+ CFLAGS += -I$(out-dir)/xtest
+ 
+ CFLAGS += -I$(OPTEE_CLIENT_EXPORT)/include
+@@ -126,7 +125,6 @@ CFLAGS += -I../../ta/socket/include
+ CFLAGS += -I../../ta/sdp_basic/include
+ CFLAGS += -I../../ta/tpm_log_test/include
+ CFLAGS += -I../../ta/large/include
+-CFLAGS += -I../../ta/supp_plugin/include
+ 
+ TA_DIR ?= /lib/optee_armtz
+ CFLAGS += -DTA_DIR=\"$(TA_DIR)\"
+diff --git a/host/xtest/regression_1000.c b/host/xtest/regression_1000.c
+index 33cfe57..789d0de 100644
+--- a/host/xtest/regression_1000.c
++++ b/host/xtest/regression_1000.c
+@@ -4,7 +4,6 @@
+  * Copyright (c) 2014, STMicroelectronics International N.V.
+  */
+ 
+-#include <errno.h>
+ #include <limits.h>
+ #include <pthread.h>
+ #include <stdio.h>
+@@ -30,12 +29,9 @@
+ #include <ta_sims_keepalive_test.h>
+ #include <ta_concurrent.h>
+ #include <ta_tpm_log_test.h>
+-#include <ta_supp_plugin.h>
+ #include <sdp_basic.h>
+ #include <pta_secstor_ta_mgmt.h>
+ 
+-#include <test_supp_plugin.h>
+-
+ #ifndef MIN
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
+ #endif
+@@ -2363,130 +2359,6 @@ static void xtest_tee_test_1032(ADBG_Case_t *c)
+ ADBG_CASE_DEFINE(regression, 1032, xtest_tee_test_1032,
+ 		"Register read-only shared memory");
+ 
+-static void xtest_tee_test_1033(ADBG_Case_t *c)
+-{
+-	TEEC_Session session = { };
+-	uint32_t ret_orig = 0;
+-
+-	/* TA will ping the test plugin during open session operation */
+-	if (!ADBG_EXPECT_TEEC_SUCCESS(c,
+-		xtest_teec_open_session(&session, &supp_plugin_test_ta_uuid,
+-					NULL, &ret_orig)))
+-		return;
+-
+-	Do_ADBG_BeginSubCase(c, "Pass values to/from a plugin");
+-	{
+-		TEEC_Operation op = TEEC_OPERATION_INITIALIZER;
+-
+-		op.params[0].value.a = 20;
+-		op.params[0].value.b = 10;
+-		op.params[1].value.a = '+';
+-		op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT,
+-						 TEEC_VALUE_INPUT, TEEC_NONE,
+-						 TEEC_NONE);
+-
+-		ADBG_EXPECT_TEEC_SUCCESS(c,
+-			TEEC_InvokeCommand(&session,
+-					   TA_SUPP_PLUGIN_CMD_PASS_VALUES, &op,
+-					   &ret_orig));
+-		ADBG_EXPECT(c, 30, op.params[0].value.a);
+-
+-		/* reassign, because the values was changed during previous op */
+-		op.params[0].value.a = 20;
+-		op.params[0].value.b = 10;
+-		op.params[1].value.a = '-';
+-		ADBG_EXPECT_TEEC_SUCCESS(c,
+-			TEEC_InvokeCommand(&session,
+-					   TA_SUPP_PLUGIN_CMD_PASS_VALUES, &op,
+-					   &ret_orig));
+-		ADBG_EXPECT(c, 10, op.params[0].value.a);
+-	}
+-	Do_ADBG_EndSubCase(c, "Pass values to/from a plugin");
+-
+-	Do_ADBG_BeginSubCase(c, "Pass array to a plugin");
+-	{
+-		TEEC_Operation op = TEEC_OPERATION_INITIALIZER;
+-		uint8_t to_plugin[] = { 0, 1, 2, 3, 4, 5 };
+-
+-		op.params[0].tmpref.buffer = to_plugin;
+-		op.params[0].tmpref.size = sizeof(to_plugin);
+-		op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
+-						 TEEC_VALUE_OUTPUT,
+-						 TEEC_NONE, TEEC_NONE);
+-
+-		ADBG_EXPECT_TEEC_SUCCESS(c,
+-			TEEC_InvokeCommand(&session,
+-					   TA_SUPP_PLUGIN_CMD_WRITE_ARR,
+-					   &op, &ret_orig));
+-
+-		/*
+-		 * The test plugin must calculate a sum of the input elements
+-		 * and store it to 'op.params[1].value.a'
+-		 */
+-		ADBG_EXPECT(c, 15, op.params[1].value.a);
+-	}
+-	Do_ADBG_EndSubCase(c, "Pass array to a plugin");
+-
+-	Do_ADBG_BeginSubCase(c, "Get array from a plugin");
+-	{
+-		TEEC_Operation op = TEEC_OPERATION_INITIALIZER;
+-		char from_plugin[64] = { };
+-		char expected_arr[] = "Array from plugin";
+-		size_t expectes_size = sizeof(expected_arr);
+-
+-		op.params[0].tmpref.buffer = from_plugin;
+-		op.params[0].tmpref.size = sizeof(from_plugin);
+-		op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_OUTPUT,
+-						 TEEC_VALUE_OUTPUT, TEEC_NONE,
+-						 TEEC_NONE);
+-		ADBG_EXPECT_TEEC_SUCCESS(c,
+-			TEEC_InvokeCommand(&session,
+-					   TA_SUPP_PLUGIN_CMD_GET_ARR, &op,
+-					   &ret_orig));
+-		ADBG_EXPECT(c, expectes_size, op.params[1].value.a);
+-		ADBG_EXPECT_EQUAL(c, expected_arr, from_plugin, expectes_size);
+-	}
+-	Do_ADBG_EndSubCase(c, "Get array from a plugin");
+-
+-	Do_ADBG_BeginSubCase(c, "Not allow bad input to a plugin");
+-	{
+-		TEEC_Operation op = TEEC_OPERATION_INITIALIZER;
+-
+-		op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE,
+-						 TEEC_NONE, TEEC_NONE);
+-		ADBG_EXPECT_TEEC_RESULT(c, TEE_ERROR_BAD_PARAMETERS,
+-			TEEC_InvokeCommand(&session,
+-					   TA_SUPP_PLUGIN_CMD_BAD_UUID, &op,
+-					   &ret_orig));
+-		ADBG_EXPECT_TEEC_RESULT(c, TEE_ERROR_BAD_PARAMETERS,
+-			TEEC_InvokeCommand(&session,
+-					   TA_SUPP_PLUGIN_CMD_BAD_IN_DATA, &op,
+-					   &ret_orig));
+-		ADBG_EXPECT_TEEC_RESULT(c, TEE_ERROR_BAD_PARAMETERS,
+-			TEEC_InvokeCommand(&session,
+-					   TA_SUPP_PLUGIN_CMD_BAD_IN_LEN, &op,
+-					   &ret_orig));
+-	}
+-	Do_ADBG_EndSubCase(c, "Not allow bad input to a plugin");
+-
+-	Do_ADBG_BeginSubCase(c, "Call an unknown plugin");
+-	{
+-		TEEC_Operation op = TEEC_OPERATION_INITIALIZER;
+-
+-		op.paramTypes = TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE,
+-						 TEEC_NONE, TEEC_NONE);	
+-		ADBG_EXPECT_TEEC_RESULT(c, TEEC_ERROR_ITEM_NOT_FOUND,
+-			TEEC_InvokeCommand(&session,
+-					   TA_SUPP_PLUGIN_CMD_UNKNOWN_UUID,
+-					   &op, &ret_orig));
+-	}
+-	Do_ADBG_EndSubCase(c, "Call an unknown plugin");
+-
+-	TEEC_CloseSession(&session);
+-}
+-ADBG_CASE_DEFINE(regression, 1033, xtest_tee_test_1033,
+-		 "Test the supplicant plugin framework");
+-
+ static void xtest_tee_test_1034(ADBG_Case_t *c)
+ {
+ 	TEEC_Result res = TEEC_SUCCESS;
+diff --git a/host/xtest/xtest_test.c b/host/xtest/xtest_test.c
+index 7285dd8..e71922a 100644
+--- a/host/xtest/xtest_test.c
++++ b/host/xtest/xtest_test.c
+@@ -20,7 +20,6 @@
+ #include <ta_socket.h>
+ #include <ta_storage_benchmark.h>
+ #include <ta_storage.h>
+-#include <ta_supp_plugin.h>
+ #include <ta_tpm_log_test.h>
+ #include <tee_api_defines.h>
+ #include <tee_client_api.h>
+@@ -198,5 +197,4 @@ const TEEC_UUID storage_benchmark_ta_uuid = TA_STORAGE_BENCHMARK_UUID;
+ const TEEC_UUID socket_ta_uuid = TA_SOCKET_UUID;
+ const TEEC_UUID sdp_basic_ta_uuid = TA_SDP_BASIC_UUID;
+ const TEEC_UUID tpm_log_test_ta_uuid = TA_TPM_LOG_TEST_UUID;
+-const TEEC_UUID supp_plugin_test_ta_uuid = TA_SUPP_PLUGIN_UUID;
+ const TEEC_UUID large_ta_uuid = TA_LARGE_UUID;
+diff --git a/host/xtest/xtest_test.h b/host/xtest/xtest_test.h
+index 22ea877..4a9bf5b 100644
+--- a/host/xtest/xtest_test.h
++++ b/host/xtest/xtest_test.h
+@@ -133,7 +133,6 @@ extern const TEEC_UUID storage_benchmark_ta_uuid;
+ extern const TEEC_UUID socket_ta_uuid;
+ extern const TEEC_UUID sdp_basic_ta_uuid;
+ extern const TEEC_UUID tpm_log_test_ta_uuid;
+-extern const TEEC_UUID supp_plugin_test_ta_uuid;
+ extern const TEEC_UUID large_ta_uuid;
+ extern char *xtest_tee_name;
+ 
+diff --git a/ta/CMakeLists.txt b/ta/CMakeLists.txt
+index e253ac0..e6f8f3e 100644
+--- a/ta/CMakeLists.txt
++++ b/ta/CMakeLists.txt
+@@ -20,6 +20,5 @@ target_include_directories(${PROJECT_NAME}
+ 	INTERFACE socket/include
+ 	INTERFACE storage_benchmark/include
+ 	INTERFACE tpm_log_test/include
+-	INTERFACE supp_plugin/include
+ 	INTERFACE large/include
+ )
+diff --git a/ta/Makefile b/ta/Makefile
+index 25a5cea..552e812 100644
+--- a/ta/Makefile
++++ b/ta/Makefile
+@@ -31,7 +31,6 @@ TA_DIRS := create_fail_test \
+ 	   sha_perf \
+ 	   aes_perf \
+ 	   socket \
+-	   supp_plugin \
+ 	   large
+ 
+ ifeq ($(CFG_SECURE_DATA_PATH),y)
+diff --git a/ta/supp_plugin/Android.mk b/ta/supp_plugin/Android.mk
+deleted file mode 100644
+index bb5792b..0000000
+--- a/ta/supp_plugin/Android.mk
++++ /dev/null
+@@ -1,4 +0,0 @@
+-LOCAL_PATH := $(call my-dir)
+-
+-local_module := 380231ac-fb99-47ad-a689-9e017eb6e78a.ta
+-include $(BUILD_OPTEE_MK)
+diff --git a/ta/supp_plugin/Makefile b/ta/supp_plugin/Makefile
+deleted file mode 100644
+index 5c1965b..0000000
+--- a/ta/supp_plugin/Makefile
++++ /dev/null
+@@ -1,2 +0,0 @@
+-BINARY = 380231ac-fb99-47ad-a689-9e017eb6e78a
+-include ../ta_common.mk
+diff --git a/ta/supp_plugin/include/ta_supp_plugin.h b/ta/supp_plugin/include/ta_supp_plugin.h
+deleted file mode 100644
+index fd05255..0000000
+--- a/ta/supp_plugin/include/ta_supp_plugin.h
++++ /dev/null
+@@ -1,20 +0,0 @@
+-/* SPDX-License-Identifier: BSD-2-Clause */
+-/*
+- * Copyright (c) 2021 Open Mobile Platform LLC
+- */
+-
+-#ifndef TA_SUPP_PLUGIN_H
+-#define TA_SUPP_PLUGIN_H
+-
+-#define TA_SUPP_PLUGIN_UUID { 0x380231ac, 0xfb99, 0x47ad, \
+-	{ 0xa6, 0x89, 0x9e, 0x01, 0x7e, 0xb6, 0xe7, 0x8a } }
+-
+-#define TA_SUPP_PLUGIN_CMD_PASS_VALUES	0
+-#define TA_SUPP_PLUGIN_CMD_WRITE_ARR	1
+-#define TA_SUPP_PLUGIN_CMD_GET_ARR	2
+-#define TA_SUPP_PLUGIN_CMD_BAD_UUID	3
+-#define TA_SUPP_PLUGIN_CMD_BAD_IN_DATA	4
+-#define TA_SUPP_PLUGIN_CMD_BAD_IN_LEN	5
+-#define TA_SUPP_PLUGIN_CMD_UNKNOWN_UUID	6
+-
+-#endif /* TA_SUPP_PLUGIN_H */
+diff --git a/ta/supp_plugin/include/user_ta_header_defines.h b/ta/supp_plugin/include/user_ta_header_defines.h
+deleted file mode 100644
+index 0003c92..0000000
+--- a/ta/supp_plugin/include/user_ta_header_defines.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/* SPDX-License-Identifier: BSD-2-Clause */
+-/*
+- * Copyright (c) 2021 Open Mobile Platform LLC
+- */
+-
+-#ifndef USER_TA_HEADER_DEFINES_H
+-#define USER_TA_HEADER_DEFINES_H
+-
+-#include <ta_supp_plugin.h>
+-#include <user_ta_header.h>
+-
+-#define TA_UUID		TA_SUPP_PLUGIN_UUID
+-#define TA_FLAGS	0
+-#define TA_STACK_SIZE	(8 * 1024)
+-#define TA_DATA_SIZE	(32 * 1024)
+-
+-#endif /* USER_TA_HEADER_DEFINES_H */
+diff --git a/ta/supp_plugin/sub.mk b/ta/supp_plugin/sub.mk
+deleted file mode 100644
+index dd01461..0000000
+--- a/ta/supp_plugin/sub.mk
++++ /dev/null
+@@ -1,3 +0,0 @@
+-global-incdirs-y += include
+-global-incdirs-y += ../../host/supp_plugin/include
+-srcs-y += ta_entry.c
+diff --git a/ta/supp_plugin/ta_entry.c b/ta/supp_plugin/ta_entry.c
+deleted file mode 100644
+index 216b7f5..0000000
+--- a/ta/supp_plugin/ta_entry.c
++++ /dev/null
+@@ -1,169 +0,0 @@
+-//SPDX-License-Identifier: BSD-2-Clause
+-/*
+- * Copyright (c) 2021 Open Mobile Platform LLC
+- */
+-
+-#include <stddef.h>
+-#include <stdint.h>
+-#include <string.h>
+-#include <stdlib.h>
+-#include <ta_supp_plugin.h>
+-#include <tee_internal_api.h>
+-#include <tee_internal_api_extensions.h>
+-#include <test_supp_plugin.h>
+-#include <trace.h>
+-
+-static const TEE_UUID uuid = TEST_PLUGIN_UUID;
+-
+-TEE_Result TA_CreateEntryPoint(void)
+-{
+-	return TEE_SUCCESS;
+-}
+-
+-void TA_DestroyEntryPoint(void)
+-{
+-}
+-
+-TEE_Result TA_OpenSessionEntryPoint(uint32_t nParamTypes __unused,
+-				    TEE_Param pParams[4] __unused,
+-				    void **ppSessionContext __unused)
+-{
+-	/* check the plugin was loaded */
+-	return tee_invoke_supp_plugin(&uuid, TEST_PLUGIN_CMD_PING, 0, NULL, 0,
+-				      NULL);
+-}
+-
+-void TA_CloseSessionEntryPoint(void *pSessionContext __unused)
+-{
+-}
+-
+-static TEE_Result pass_values(uint32_t param_types,
+-			     TEE_Param params[TEE_NUM_PARAMS])
+-{
+-	uint32_t exp_pt = TEE_PARAM_TYPES(TEE_PARAM_TYPE_VALUE_INOUT,
+-					  TEE_PARAM_TYPE_VALUE_INPUT,
+-					  TEE_PARAM_TYPE_NONE,
+-					  TEE_PARAM_TYPE_NONE);
+-	TEE_Result res = TEE_ERROR_GENERIC;
+-	size_t outlen = 0;
+-	struct add_op {
+-		uint32_t a;
+-		uint32_t b;
+-	} values = { 0 };
+-
+-	if (exp_pt != param_types)
+-		return TEE_ERROR_BAD_PARAMETERS;
+-
+-	values.a = params[0].value.a;
+-	values.b = params[0].value.b;
+-
+-	res = tee_invoke_supp_plugin(&uuid, TEST_PLUGIN_CMD_PASS_VALUES,
+-				     params[1].value.a, (void *)&values,
+-				     sizeof(struct add_op), &outlen);
+-	params[0].value.a = values.a;
+-
+-	return res;
+-}
+-
+-static TEE_Result write_array(uint32_t param_types,
+-			      TEE_Param params[TEE_NUM_PARAMS])
+-{
+-	uint32_t exp_pt = TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_INPUT,
+-					  TEE_PARAM_TYPE_VALUE_OUTPUT,
+-					  TEE_PARAM_TYPE_NONE,
+-					  TEE_PARAM_TYPE_NONE);
+-	TEE_Result res = TEE_ERROR_GENERIC;
+-	size_t outlen = 0;
+-	uint8_t *d = params[0].memref.buffer;
+-
+-	if (exp_pt != param_types)
+-		return TEE_ERROR_BAD_PARAMETERS;
+-
+-	res = tee_invoke_supp_plugin(&uuid, TEST_PLUGIN_CMD_WRITE_ARR, 0,
+-				     params[0].memref.buffer,
+-				     params[0].memref.size, &outlen);
+-	params[1].value.a = d[0];
+-
+-	return res;
+-}
+-
+-static TEE_Result get_array(uint32_t param_types,
+-			    TEE_Param params[TEE_NUM_PARAMS])
+-{
+-	uint32_t exp_pt = TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_OUTPUT,
+-					  TEE_PARAM_TYPE_VALUE_OUTPUT,
+-					  TEE_PARAM_TYPE_NONE,
+-					  TEE_PARAM_TYPE_NONE);
+-	TEE_Result res = TEE_ERROR_GENERIC;
+-	size_t outlen = 0;
+-
+-	if (exp_pt != param_types)
+-		return TEE_ERROR_BAD_PARAMETERS;
+-
+-	res = tee_invoke_supp_plugin(&uuid, TEST_PLUGIN_CMD_GET_ARR, 0,
+-				     params[0].memref.buffer,
+-				     params[0].memref.size,
+-				     &outlen);
+-	params[1].value.a = (uint32_t)outlen;
+-
+-	return res;
+-}
+-
+-static TEE_Result bad_input_uuid(uint32_t param_types __unused,
+-				 TEE_Param params[TEE_NUM_PARAMS] __unused)
+-{
+-	char data[32] = {  };
+-	size_t inlen = sizeof(data);
+-
+-	return tee_invoke_supp_plugin(NULL, 0, 0, data, inlen, NULL);
+-}
+-
+-static TEE_Result bad_input_data(uint32_t param_types __unused,
+-				 TEE_Param params[TEE_NUM_PARAMS] __unused)
+-{
+-	return tee_invoke_supp_plugin(&uuid, 0, 0, NULL, 10, NULL);
+-}
+-
+-static TEE_Result bad_input_inlen(uint32_t param_types __unused,
+-				  TEE_Param params[TEE_NUM_PARAMS] __unused)
+-{
+-	char data[32] = {  };
+-
+-	return tee_invoke_supp_plugin(&uuid, 0, 0, data, 0, NULL);
+-}
+-
+-static TEE_Result call_unknown_plugin(uint32_t param_types __unused,
+-				      TEE_Param params[TEE_NUM_PARAMS]
+-				      __unused)
+-{
+-	const TEE_UUID nulluuid = {  };
+-	char data[32] = {  };
+-	size_t inlen = sizeof(data);
+-
+-	return tee_invoke_supp_plugin(&nulluuid, 0, 0, data, inlen, NULL);
+-}
+-
+-TEE_Result TA_InvokeCommandEntryPoint(void *pSessionContext __unused,
+-				      uint32_t nCommandID,
+-				      uint32_t nParamTypes,
+-				      TEE_Param pParams[4])
+-{
+-	switch (nCommandID) {
+-	case TA_SUPP_PLUGIN_CMD_PASS_VALUES:
+-		return pass_values(nParamTypes, pParams);
+-	case TA_SUPP_PLUGIN_CMD_WRITE_ARR:
+-		return write_array(nParamTypes, pParams);
+-	case TA_SUPP_PLUGIN_CMD_GET_ARR:
+-		return get_array(nParamTypes, pParams);
+-	case TA_SUPP_PLUGIN_CMD_BAD_UUID:
+-		return bad_input_uuid(nParamTypes, pParams);
+-	case TA_SUPP_PLUGIN_CMD_BAD_IN_DATA:
+-		return bad_input_data(nParamTypes, pParams);
+-	case TA_SUPP_PLUGIN_CMD_BAD_IN_LEN:
+-		return bad_input_inlen(nParamTypes, pParams);
+-	case TA_SUPP_PLUGIN_CMD_UNKNOWN_UUID:
+-		return call_unknown_plugin(nParamTypes, pParams);
+-	default:
+-		return TEE_ERROR_NOT_SUPPORTED;
+-	}
+-}
