@@ -10,7 +10,9 @@ inherit python3native
 
 PV = "3.14.0+git${SRCPV}"
 
-SRC_URI = "git://github.com/OP-TEE/optee_test.git"
+SRC_URI = "git://github.com/OP-TEE/optee_test.git \
+           file://0001-xtest-remove-TEE_ALG_DES3_CMAC-tests.patch \
+           "
 
 SRCREV = "f2eb88affbb7f028561b4fd5cbd049d5d704f741"
 
