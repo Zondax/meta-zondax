@@ -1,5 +1,5 @@
-SUMMARY = "OPTEE test packagegroup"
-DESCRIPTION = "Provide optee test and ta-sdp packages"
+SUMMARY = "OP-TEE test package group"
+DESCRIPTION = "Provide optee-test package"
 LICENSE = "LGPLv2+"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/LGPL-2.0-or-later;md5=6d2d9952d88b50a51a5c73dc431d06c7"
 
