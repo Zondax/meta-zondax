@@ -1,4 +1,4 @@
-SUMMARY = "OPTEE Client"
+SUMMARY = "OPTEE client"
 HOMEPAGE = "https://github.com/OP-TEE/optee_client"
 
 LICENSE = "BSD-2-Clause"
