@@ -10,7 +10,10 @@ inherit python3native
 
 PV = "3.14.0+git${SRCPV}"
 
-SRC_URI = "git://github.com/linaro-swg/optee_examples.git"
+SRC_URI = "git://github.com/linaro-swg/optee_examples.git \
+           file://0001-plugins-Honour-default-cross-compiler-environment-se.patch \
+           file://0002-Makefile-Enable-plugins-installation-in-rootfs.patch \
+          "
 
 SRCREV = "e9c870525af8f7e7fccf575a0ca5394ce55adcec"
 
@@ -36,14 +39,18 @@ do_compile() {
 do_install () {
     mkdir -p ${D}${nonarch_base_libdir}/optee_armtz
     mkdir -p ${D}${bindir}
+    mkdir -p ${D}${libdir}/tee-supplicant/plugins
     install -D -p -m0755 ${S}/out/ca/* ${D}${bindir}
     install -D -p -m0444 ${S}/out/ta/* ${D}${nonarch_base_libdir}/optee_armtz
+    install -D -p -m0444 ${S}/out/plugins/* ${D}${libdir}/tee-supplicant/plugins
 }
 
 # Avoid QA Issue: No GNU_HASH in the elf binary
 INSANE_SKIP_${PN} += "ldflags"
 
-FILES_${PN} += "${nonarch_base_libdir}/optee_armtz/"
+FILES_${PN} += "${nonarch_base_libdir}/optee_armtz/ \
+                ${libdir}/tee-supplicant/plugins/ \
+               "
 
 # Imports machine specific configs from staging to build
 PACKAGE_ARCH = "${MACHINE_ARCH}"
