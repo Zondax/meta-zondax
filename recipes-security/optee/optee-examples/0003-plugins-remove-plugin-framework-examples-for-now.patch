@@ -1,0 +1,613 @@
+From 4bdbb47763999e390b676efeeb16ab4ae2a680f6 Mon Sep 17 00:00:00 2001
+From: zondax <info@zondax.ch>
+Date: Tue, 14 Sep 2021 19:49:11 +0000
+Subject: [PATCH] plugins: remove plugin framework examples for now
+
+---
+ Makefile                            |  5 --
+ plugins/Android.mk                  | 44 ---------------
+ plugins/CMakeLists.txt              | 20 -------
+ plugins/Makefile                    | 17 ------
+ plugins/host/Makefile               | 30 -----------
+ plugins/host/main.c                 | 80 ---------------------------
+ plugins/syslog/CMakeLists.txt       |  8 ---
+ plugins/syslog/Makefile             | 32 -----------
+ plugins/syslog/syslog_plugin.c      | 62 ---------------------
+ plugins/ta/Android.mk               |  4 --
+ plugins/ta/Makefile                 | 12 -----
+ plugins/ta/include/plugin_ta.h      | 37 -------------
+ plugins/ta/plugin_ta.c              | 83 -----------------------------
+ plugins/ta/sub.mk                   |  2 -
+ plugins/ta/user_ta_header_defines.h | 36 -------------
+ 15 files changed, 472 deletions(-)
+ delete mode 100644 plugins/Android.mk
+ delete mode 100644 plugins/CMakeLists.txt
+ delete mode 100644 plugins/Makefile
+ delete mode 100644 plugins/host/Makefile
+ delete mode 100644 plugins/host/main.c
+ delete mode 100644 plugins/syslog/CMakeLists.txt
+ delete mode 100644 plugins/syslog/Makefile
+ delete mode 100644 plugins/syslog/syslog_plugin.c
+ delete mode 100644 plugins/ta/Android.mk
+ delete mode 100644 plugins/ta/Makefile
+ delete mode 100644 plugins/ta/include/plugin_ta.h
+ delete mode 100644 plugins/ta/plugin_ta.c
+ delete mode 100644 plugins/ta/sub.mk
+ delete mode 100644 plugins/ta/user_ta_header_defines.h
+
+diff --git a/Makefile b/Makefile
+index 9359d95..a275842 100644
+--- a/Makefile
++++ b/Makefile
+@@ -25,19 +25,14 @@ prepare-for-rootfs: examples
+ 	@mkdir -p $(OUTPUT_DIR)
+ 	@mkdir -p $(OUTPUT_DIR)/ta
+ 	@mkdir -p $(OUTPUT_DIR)/ca
+-	@mkdir -p $(OUTPUT_DIR)/plugins
+ 	@for example in $(EXAMPLE_LIST); do \
+ 		if [ -e $$example/host/optee_example_$$example ]; then \
+ 			cp -p $$example/host/optee_example_$$example $(OUTPUT_DIR)/ca/; \
+ 		fi; \
+ 		cp -pr $$example/ta/*.ta $(OUTPUT_DIR)/ta/; \
+-		if [ $$example = plugins ]; then \
+-			cp -p plugins/syslog/*.plugin $(OUTPUT_DIR)/plugins/; \
+-		fi; \
+ 	done
+ 
+ prepare-for-rootfs-clean:
+ 	@rm -rf $(OUTPUT_DIR)/ta
+ 	@rm -rf $(OUTPUT_DIR)/ca
+-	@rm -rf $(OUTPUT_DIR)/plugins
+ 	@rmdir --ignore-fail-on-non-empty $(OUTPUT_DIR) || test ! -e $(OUTPUT_DIR)
+diff --git a/plugins/Android.mk b/plugins/Android.mk
+deleted file mode 100644
+index 1a68c28..0000000
+--- a/plugins/Android.mk
++++ /dev/null
+@@ -1,44 +0,0 @@
+-LOCAL_PATH := $(call my-dir)
+-
+-###################### optee-plugins ######################
+-include $(CLEAR_VARS)
+-LOCAL_CFLAGS += -DANDROID_BUILD
+-LOCAL_CFLAGS += -Wall
+-
+-LOCAL_SRC_FILES += host/main.c
+-
+-LOCAL_C_INCLUDES := $(LOCAL_PATH)/ta/include
+-
+-LOCAL_SHARED_LIBRARIES := libteec
+-LOCAL_MODULE := optee_example_plugins
+-LOCAL_VENDOR_MODULE := true
+-LOCAL_MODULE_TAGS := optional
+-include $(BUILD_EXECUTABLE)
+-
+-###################### optee-plugins libs #################
+-include $(CLEAR_VARS)
+-
+-PLUGIN_UUID = 96bcf744-4f72-4866-bf1d-8634fd9c65e5
+-
+-PLUGIN                  = $(PLUGIN_UUID).plugin
+-PLUGIN_INCLUDES_DIR     = $(LOCAL_PATH)/syslog
+-
+-LOCAL_MODULE := $(PLUGIN)
+-LOCAL_MODULE_RELATIVE_PATH := tee-supplicant/plugins
+-LOCAL_VENDOR_MODULE := true
+-# below is needed to locate optee_client exported headers
+-LOCAL_SHARED_LIBRARIES := libteec
+-
+-LOCAL_SRC_FILES += syslog/syslog_plugin.c
+-LOCAL_C_INCLUDES += $(PLUGIN_INCLUDES_DIR)
+-
+-LOCAL_MODULE_TAGS := optional
+-
+-# Build the 32-bit and 64-bit versions.
+-LOCAL_MULTILIB := both
+-LOCAL_MODULE_TARGET_ARCH := arm arm64
+-
+-include $(BUILD_SHARED_LIBRARY)
+-
+-###################### TA #################################
+-include $(LOCAL_PATH)/ta/Android.mk
+diff --git a/plugins/CMakeLists.txt b/plugins/CMakeLists.txt
+deleted file mode 100644
+index 0fea38e..0000000
+--- a/plugins/CMakeLists.txt
++++ /dev/null
+@@ -1,20 +0,0 @@
+-project (optee_example_plugins C)
+-
+-set (SRC host/main.c)
+-
+-add_executable (${PROJECT_NAME} ${SRC})
+-
+-target_include_directories(${PROJECT_NAME}
+-			   PRIVATE ta/include
+-			   PRIVATE include)
+-
+-target_compile_definitions (${PROJECT_NAME}
+-	PRIVATE -DBINARY_PREFIX="TEE-EXMPL"
+-)
+-
+-target_link_libraries (${PROJECT_NAME}
+-			   PRIVATE teec)
+-
+-install (TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+-
+-add_subdirectory (syslog)
+diff --git a/plugins/Makefile b/plugins/Makefile
+deleted file mode 100644
+index ea472b4..0000000
+--- a/plugins/Makefile
++++ /dev/null
+@@ -1,17 +0,0 @@
+-export V?=0
+-
+-# If _HOST or _TA specific compilers are not specified, then use CROSS_COMPILE
+-HOST_CROSS_COMPILE ?= $(CROSS_COMPILE)
+-TA_CROSS_COMPILE ?= $(CROSS_COMPILE)
+-
+-.PHONY: all
+-all:
+-	$(MAKE) -C host CROSS_COMPILE="$(HOST_CROSS_COMPILE)" --no-builtin-variables
+-	$(MAKE) -C ta CROSS_COMPILE="$(TA_CROSS_COMPILE)" LDFLAGS=""
+-	$(MAKE) -C syslog CROSS_COMPILE="$(HOST_CROSS_COMPILE)" --no-builtin-variables
+-
+-.PHONY: clean
+-clean:
+-	$(MAKE) -C host clean
+-	$(MAKE) -C ta clean
+-	$(MAKE) -C syslog clean
+diff --git a/plugins/host/Makefile b/plugins/host/Makefile
+deleted file mode 100644
+index 76244c7..0000000
+--- a/plugins/host/Makefile
++++ /dev/null
+@@ -1,30 +0,0 @@
+-CC      ?= $(CROSS_COMPILE)gcc
+-LD      ?= $(CROSS_COMPILE)ld
+-AR      ?= $(CROSS_COMPILE)ar
+-NM      ?= $(CROSS_COMPILE)nm
+-OBJCOPY ?= $(CROSS_COMPILE)objcopy
+-OBJDUMP ?= $(CROSS_COMPILE)objdump
+-READELF ?= $(CROSS_COMPILE)readelf
+-
+-OBJS = main.o
+-
+-CFLAGS += -Wall -I../ta/include -I$(TEEC_EXPORT)/include -I./include
+-CFLAGS += -DBINARY_PREFIX=\"TEE-EXMPL\"
+-
+-#Add/link other required libraries here
+-LDADD += -lteec -L$(TEEC_EXPORT)/lib
+-
+-BINARY = optee_example_plugins
+-
+-.PHONY: all
+-all: $(BINARY)
+-
+-$(BINARY): $(OBJS)
+-	$(CC) $(LDFLAGS) -o $@ $< $(LDADD)
+-
+-.PHONY: clean
+-clean:
+-	rm -f $(OBJS) $(BINARY)
+-
+-%.o: %.c
+-	$(CC) $(CFLAGS) -c $< -o $@
+diff --git a/plugins/host/main.c b/plugins/host/main.c
+deleted file mode 100644
+index b09b05a..0000000
+--- a/plugins/host/main.c
++++ /dev/null
+@@ -1,80 +0,0 @@
+-// SPDX-License-Identifier: BSD-2-Clause
+-/*
+- * Copyright (c) 2020, Open Mobile Platform LLC
+- */
+-
+-#include <err.h>
+-#include <inttypes.h>
+-#include <stdio.h>
+-#include <string.h>
+-#include <stdbool.h>
+-#include <unistd.h>
+-
+-/* OP-TEE TEE client API (built by optee_client) */
+-#include <tee_client_api.h>
+-
+-/* For the UUID (found in the TA's h-file(s)) */
+-#include <plugin_ta.h>
+-
+-#define SLEEP_SEC 2
+-#define TA_PING_CNT 5
+-
+-int main(void)
+-{
+-	int i = 0;
+-	TEEC_Result res = TEEC_SUCCESS;
+-	TEEC_Context ctx = { };
+-	TEEC_Session sess = { };
+-	TEEC_Operation op = { };
+-	TEEC_UUID uuid = PLUGIN_TA_UUID;
+-	uint32_t err_origin = 0;
+-
+-	/* Initialize a context connecting us to the TEE */
+-	res = TEEC_InitializeContext(NULL, &ctx);
+-	if (res != TEEC_SUCCESS)
+-		errx(1, "TEEC_InitializeContext failed with code %#" PRIx32,
+-		     res);
+-
+-	/* Open a session to the "plugin" TA */
+-	res = TEEC_OpenSession(&ctx, &sess, &uuid, TEEC_LOGIN_PUBLIC, NULL,
+-			       NULL, &err_origin);
+-	if (res != TEEC_SUCCESS)
+-		errx(1, "TEEC_Opensession failed with code %#" PRIx32 "origin %#" PRIx32,
+-		     res, err_origin);
+-
+-	/* Clear the TEEC_Operation struct */
+-	memset(&op, 0, sizeof(op));
+-	op.paramTypes =
+-		TEEC_PARAM_TYPES(TEEC_NONE, TEEC_NONE, TEEC_NONE, TEEC_NONE);
+-
+-	/*
+-	 * TA will refer to the syslog plugin to print some log messages to REE.
+-	 *
+-	 * See the plugin code in the optee-client.
+-	 * See the log through 'journalctl'.
+-	 */
+-
+-	printf("Work logic: REE --> plugin TA --> syslog plugin in REE --> syslog\n");
+-	printf("See the log from TEE through 'journalctl'\n\n");
+-
+-	for (i = 0; i < TA_PING_CNT; ++i) {
+-		res = TEEC_InvokeCommand(&sess, PLUGIN_TA_PING, &op,
+-					 &err_origin);
+-
+-		printf("Attempt #%d: TEEC_InvokeCommand() %s; res=%#" PRIx32 " orig=%#" PRIx32 "\n",
+-		       i + 1, (res == TEEC_SUCCESS) ? "success" : "failed",
+-		       res, err_origin);
+-
+-		sleep(SLEEP_SEC);
+-	}
+-
+-	/*
+-	 * We're done with the TA, close the session and
+-	 * destroy the context.
+-	 */
+-
+-	TEEC_CloseSession(&sess);
+-	TEEC_FinalizeContext(&ctx);
+-
+-	return 0;
+-}
+diff --git a/plugins/syslog/CMakeLists.txt b/plugins/syslog/CMakeLists.txt
+deleted file mode 100644
+index 5b17113..0000000
+--- a/plugins/syslog/CMakeLists.txt
++++ /dev/null
+@@ -1,8 +0,0 @@
+-project (96bcf744-4f72-4866-bf1d-8634fd9c65e5.plugin C)
+-
+-set (CFG_TEE_PLUGIN_LOAD_PATH "/usr/lib/tee-supplicant/plugins/")
+-set (CMAKE_SHARED_LIBRARY_PREFIX "")
+-
+-add_library(${PROJECT_NAME} SHARED syslog_plugin.c)
+-
+-install (TARGETS ${PROJECT_NAME} DESTINATION ${CFG_TEE_PLUGIN_LOAD_PATH})
+diff --git a/plugins/syslog/Makefile b/plugins/syslog/Makefile
+deleted file mode 100644
+index 71f5f92..0000000
+--- a/plugins/syslog/Makefile
++++ /dev/null
+@@ -1,32 +0,0 @@
+-CC      ?= $(CROSS_COMPILE)gcc
+-LD      ?= $(CROSS_COMPILE)ld
+-AR      ?= $(CROSS_COMPILE)ar
+-NM      ?= $(CROSS_COMPILE)nm
+-OBJCOPY ?= $(CROSS_COMPILE)objcopy
+-OBJDUMP ?= $(CROSS_COMPILE)objdump
+-READELF ?= $(CROSS_COMPILE)readelf
+-
+-PLUGIN_UUID = 96bcf744-4f72-4866-bf1d-8634fd9c65e5
+-
+-PLUGIN			= $(PLUGIN_UUID).plugin
+-PLUGIN_SRS		= $(wildcard ./*.c)
+-PLUGIN_OBJ		= $(patsubst %.c, %.o, $(PLUGIN_SRS))
+-PLUGIN_INCLUDES_DIR	= $(CURDIR) $(TEEC_EXPORT)/include
+-
+-PLUGIN_INCLUDES		= $(addprefix -I, $(PLUGIN_INCLUDES_DIR))
+-PLUGIN_CCFLAGS		= $(CFLAGS) -Wall -fPIC
+-PLUGIN_LDFLAGS		= $(LDFLAGS) -shared
+-
+-.PHONY: all
+-all: $(PLUGIN)
+-
+-$(PLUGIN): $(PLUGIN_OBJ)
+-	$(CC) $(PLUGIN_LDFLAGS) $(PLUGIN_OBJ) -o $@
+-
+-%.o: %.c
+-	$(CC) $(PLUGIN_CCFLAGS) $(PLUGIN_INCLUDES) -c $*.c -o $*.o
+-
+-.PHONY: clean
+-clean:
+-	$(RM) $(PLUGIN_OBJ) $(PLUGIN_UUID).plugin
+-
+diff --git a/plugins/syslog/syslog_plugin.c b/plugins/syslog/syslog_plugin.c
+deleted file mode 100644
+index 5dd1b90..0000000
+--- a/plugins/syslog/syslog_plugin.c
++++ /dev/null
+@@ -1,62 +0,0 @@
+-// SPDX-License-Identifier: BSD-2-Clause
+-/*
+- * Copyright (c) 2020, Open Mobile Platform LLC
+- */
+-
+-#include <stddef.h>
+-#include <syslog.h>
+-#include <tee_plugin_method.h>
+-
+-/*
+- * OPTEE has access to the plugin by the UUID
+- */
+-#define SYSLOG_PLUGIN_UUID { 0x96bcf744, 0x4f72, 0x4866, \
+-		{ 0xbf, 0x1d, 0x86, 0x34, 0xfd, 0x9c, 0x65, 0xe5 } }
+-
+-/* plugin cmd */
+-#define TO_SYSLOG 0
+-
+-static TEEC_Result syslog_plugin_init(void)
+-{
+-	return TEEC_SUCCESS;
+-}
+-
+-static TEEC_Result write_syslog(unsigned int sub_cmd, void *data, size_t data_len)
+-{
+-	/* 'sub_cmd' in this case means priority according syslog.h */
+-	openlog(NULL, LOG_CONS | LOG_PID, LOG_DAEMON);
+-	syslog(sub_cmd, "%*s", (int)data_len, (const char *)data);
+-	closelog();
+-
+-	return TEEC_SUCCESS;
+-}
+-
+-static TEEC_Result syslog_plugin_invoke(unsigned int cmd, unsigned int sub_cmd,
+-					void *data, size_t data_len,
+-					size_t *out_len)
+-{
+-	/*
+-	 * The pointer 'out_len' is used to save length of
+-	 * output data from the plugin for TEE, when TEE will be needed
+-	 * by the data.
+-	 *
+-	 * Buffer 'data' is used like input and output.
+-	 */
+-	(void)out_len;
+-
+-	switch (cmd) {
+-	case TO_SYSLOG:
+-		return write_syslog(sub_cmd, data, data_len);
+-	default:
+-		break;
+-	}
+-
+-	return TEEC_ERROR_NOT_SUPPORTED;
+-}
+-
+-struct plugin_method plugin_method = {
+-	"syslog",
+-	SYSLOG_PLUGIN_UUID,
+-	syslog_plugin_init, /* can be NULL */
+-	syslog_plugin_invoke,
+-};
+diff --git a/plugins/ta/Android.mk b/plugins/ta/Android.mk
+deleted file mode 100644
+index 0468716..0000000
+--- a/plugins/ta/Android.mk
++++ /dev/null
+@@ -1,4 +0,0 @@
+-LOCAL_PATH := $(call my-dir)
+-
+-local_module := 2a287631-de1b-4fdd-a55c-b9312e40769a.ta
+-include $(BUILD_OPTEE_MK)
+diff --git a/plugins/ta/Makefile b/plugins/ta/Makefile
+deleted file mode 100644
+index 0529635..0000000
+--- a/plugins/ta/Makefile
++++ /dev/null
+@@ -1,12 +0,0 @@
+-CFG_TEE_TA_LOG_LEVEL ?= 4
+-
+-# The UUID for the Trusted Application
+-BINARY=2a287631-de1b-4fdd-a55c-b9312e40769a
+-
+--include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
+-
+-ifeq ($(wildcard $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk), )
+-clean:
+-	@echo 'Note: $$(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk not found, cannot clean TA'
+-	@echo 'Note: TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR)'
+-endif
+diff --git a/plugins/ta/include/plugin_ta.h b/plugins/ta/include/plugin_ta.h
+deleted file mode 100644
+index 69310c7..0000000
+--- a/plugins/ta/include/plugin_ta.h
++++ /dev/null
+@@ -1,37 +0,0 @@
+-/* SPDX-License-Identifier: BSD-2-Clause */
+-/*
+- * Copyright (c) 2020, Open Mobile Platform LLC
+- */
+-
+-#ifndef PLUGIN_TA_H
+-#define PLUGIN_TA_H
+-
+-/*
+- * This UUID is generated with uuidgen
+- * the ITU-T UUID generator at http://www.itu.int/ITU-T/asn1/uuid.html
+- */
+-#define PLUGIN_TA_UUID \
+-	{ 0x2a287631, 0xde1b, 0x4fdd, \
+-		{ 0xa5, 0x5c, 0xb9, 0x31, 0x2e, 0x40, 0x76, 0x9a } }
+-
+-/* trigger to use a plugin */
+-#define PLUGIN_TA_PING 0
+-
+-/*
+- * Interface with syslog tee-supplicant plugin
+- */
+-#define SYSLOG_PLUGIN_UUID { 0x96bcf744, 0x4f72, 0x4866, \
+-		{ 0xbf, 0x1d, 0x86, 0x34, 0xfd, 0x9c, 0x65, 0xe5 } }
+-#define TO_SYSLOG_CMD 0
+-
+-/* according to syslog.h */
+-#define LOG_EMERG 0 /* system is unusable */
+-#define LOG_ALERT 1 /* action must be taken immediately */
+-#define LOG_CRIT 2 /* critical conditions */
+-#define LOG_ERR 3 /* error conditions */
+-#define LOG_WARNING 4 /* warning conditions */
+-#define LOG_NOTICE 5 /* normal but significant condition */
+-#define LOG_INFO 6 /* informational */
+-#define LOG_DEBUG 7 /* debug-level messages */
+-
+-#endif /*PLUGIN_TA_H*/
+diff --git a/plugins/ta/plugin_ta.c b/plugins/ta/plugin_ta.c
+deleted file mode 100644
+index 76e856d..0000000
+--- a/plugins/ta/plugin_ta.c
++++ /dev/null
+@@ -1,83 +0,0 @@
+-// SPDX-License-Identifier: BSD-2-Clause
+-/*
+- * Copyright (c) 2020, Open Mobile Platform LLC
+- */
+-
+-#include <assert.h>
+-#include <tee_internal_api.h>
+-#include <tee_internal_api_extensions.h>
+-
+-/* This TA header */
+-#include <plugin_ta.h>
+-
+-#include <string.h>
+-#include <stdint.h>
+-
+-TEE_Result TA_CreateEntryPoint(void)
+-{
+-	return TEE_SUCCESS;
+-}
+-
+-void TA_DestroyEntryPoint(void)
+-{
+-}
+-
+-TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
+-				    TEE_Param __maybe_unused params[4],
+-				    void __maybe_unused **sess_ctx)
+-{
+-	uint32_t exp_param_types =
+-		TEE_PARAM_TYPES(TEE_PARAM_TYPE_NONE, TEE_PARAM_TYPE_NONE,
+-				TEE_PARAM_TYPE_NONE, TEE_PARAM_TYPE_NONE);
+-
+-	if (param_types != exp_param_types)
+-		return TEE_ERROR_BAD_PARAMETERS;
+-
+-	return TEE_SUCCESS;
+-}
+-
+-void TA_CloseSessionEntryPoint(void __unused *sess_ctx)
+-{
+-}
+-
+-static TEE_Result syslog_plugin_ping(void)
+-{
+-	int n = 0;
+-	TEE_Result res = TEE_SUCCESS;
+-	static uint32_t inc_var = 0;
+-	char log_str[64] = { 0 };
+-	TEE_UUID syslog_uuid = SYSLOG_PLUGIN_UUID;
+-
+-	n = snprintf(log_str, sizeof(log_str), "Hello, plugin! value = 0x%x",
+-		     inc_var++);
+-	if (n > (int)sizeof(log_str))
+-		return TEE_ERROR_GENERIC;
+-
+-	IMSG("Push syslog plugin string \"%s\"", log_str);
+-
+-	res = tee_invoke_supp_plugin(&syslog_uuid, TO_SYSLOG_CMD, LOG_INFO,
+-				     log_str, n, NULL);
+-	if (res)
+-		EMSG("invoke plugin failed with code 0x%x", res);
+-
+-	return res;
+-}
+-
+-TEE_Result TA_InvokeCommandEntryPoint(void __unused *sess_ctx,
+-				      uint32_t cmd_id, uint32_t param_types,
+-				      TEE_Param __unused params[4])
+-{
+-	uint32_t exp_param_types =
+-		TEE_PARAM_TYPES(TEE_PARAM_TYPE_NONE, TEE_PARAM_TYPE_NONE,
+-				TEE_PARAM_TYPE_NONE, TEE_PARAM_TYPE_NONE);
+-
+-	if (param_types != exp_param_types)
+-		return TEE_ERROR_BAD_PARAMETERS;
+-
+-	switch (cmd_id) {
+-	case PLUGIN_TA_PING:
+-		return syslog_plugin_ping();
+-	default:
+-		return TEE_ERROR_NOT_SUPPORTED;
+-	}
+-}
+diff --git a/plugins/ta/sub.mk b/plugins/ta/sub.mk
+deleted file mode 100644
+index 2848fbe..0000000
+--- a/plugins/ta/sub.mk
++++ /dev/null
+@@ -1,2 +0,0 @@
+-global-incdirs-y += include
+-srcs-y += plugin_ta.c
+\ No newline at end of file
+diff --git a/plugins/ta/user_ta_header_defines.h b/plugins/ta/user_ta_header_defines.h
+deleted file mode 100644
+index f97d459..0000000
+--- a/plugins/ta/user_ta_header_defines.h
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/* SPDX-License-Identifier: BSD-2-Clause */
+-/*
+- * Copyright (c) 2020, Open Mobile Platform LLC
+- */
+-
+-/*
+- * The name of this file must not be modified
+- */
+-
+-#ifndef USER_TA_HEADER_DEFINES_H
+-#define USER_TA_HEADER_DEFINES_H
+-
+-/* To get the TA UUID definition */
+-#include <plugin_ta.h>
+-
+-#define TA_UUID PLUGIN_TA_UUID
+-
+-/*
+- * TA properties: multi-instance TA, no specific attribute
+- */
+-#define TA_FLAGS 0
+-
+-/* Provisioned stack size */
+-#define TA_STACK_SIZE (2 * 1024)
+-
+-/* Provisioned heap size for TEE_Malloc() and friends */
+-#define TA_DATA_SIZE (32 * 1024)
+-
+-/* The gpd.ta.version property */
+-#define TA_VERSION "1.0"
+-
+-/* The gpd.ta.description property */
+-#define TA_DESCRIPTION \
+-	"Example of OP-TEE Trusted Application to work with plugin interface"
+-
+-#endif /* USER_TA_HEADER_DEFINES_H */
