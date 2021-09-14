@@ -12,7 +12,7 @@ DEPENDS_stm32mp1 = "optee-client virtual/optee-os python3-pycrypto-native python
 
 inherit python3native
 
-SRC_URI = "git://github.com/Zondax/hello-rustee.git;rev=master"
+SRC_URI = "git://github.com/Zondax/hello-rustee.git;rev=simple_tee"
 # or use SRC_URI = "file:///home/zondax/hello-rustee.git/src"
 
 S = "${WORKDIR}/git/src"
