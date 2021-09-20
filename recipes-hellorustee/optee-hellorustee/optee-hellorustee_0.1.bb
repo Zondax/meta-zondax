@@ -12,10 +12,10 @@ DEPENDS_stm32mp1 = "optee-client virtual/optee-os python3-pycrypto-native python
 
 inherit python3native
 
-SRC_URI = "git://github.com/Zondax/hello-rustee.git;rev=simple_tee"
+SRC_URI = "git://github.com/Zondax/hello-rustee.git;rev=rustee_app"
 # or use SRC_URI = "file:///home/zondax/hello-rustee.git/src"
 
-S = "${WORKDIR}/git/src"
+S = "${WORKDIR}"
 
 OPTEE_CLIENT_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 TEEC_EXPORT = "${STAGING_DIR_HOST}${prefix}"
@@ -84,8 +84,8 @@ do_compile() {
 do_install () {
     mkdir -p ${D}${nonarch_base_libdir}/optee_armtz
     mkdir -p ${D}${bindir}
-    install -m 755 ${S}/host/hello_rustee ${D}${bindir}/
-    install -m 444 ${S}/ta/*.ta ${D}${nonarch_base_libdir}/optee_armtz
+    install -m 755 ${S}/framework/host/src/rustee_app ${D}${bindir}/
+    install -m 444 ${S}/framework/ta/src/*.ta ${D}${nonarch_base_libdir}/optee_armtz
 }
 
 FILES_${PN} += "${nonarch_base_libdir}/optee_armtz/"
