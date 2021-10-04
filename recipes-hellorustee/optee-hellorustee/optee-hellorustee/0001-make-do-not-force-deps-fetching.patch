@@ -1,0 +1,22 @@
+From 67902432500a3e8bd9d4a3de920eefe0b2e14c19 Mon Sep 17 00:00:00 2001
+From: zondax <info@zondax.ch>
+Date: Mon, 4 Oct 2021 09:58:19 +0000
+Subject: [PATCH] make: do not force deps fetching
+
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index cf2e0b6..29e9c2c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -16,7 +16,7 @@ deps:
+ 	git submodule update --init
+ 	$(MAKE) -C framework $@
+ 
+-all: deps
++all:
+ 	$(MAKE) -C framework $@
+ 
+ copy:
