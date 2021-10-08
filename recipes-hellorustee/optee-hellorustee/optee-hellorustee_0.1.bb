@@ -16,6 +16,7 @@ SRC_URI = "gitsm://github.com/Zondax/hello-rustee.git;branch=rustee_app;rev=rust
            file://0001-make-do-not-force-deps-fetching.patch \
            file://0001-make-do-not-force-qemu-selection.patch \
            file://0002-make-use-proper-Rust-target.patch \
+           file://0003-crates-remove-broken-union-alignment.patch \
            "
 
 S = "${WORKDIR}/git"
