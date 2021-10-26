@@ -14,8 +14,11 @@ CARGO_DISABLE_BITBAKE_VENDORING = "1"
 OPTEE_CLIENT_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 TEEC_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 
+PROJ_NAME ?= "rustee_app"
+
 # stm32mp1 or qemu_v7
 EXTRA_OEMAKE = " \
+    PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
     TEEC_EXPORT=${TEEC_EXPORT} \
@@ -27,6 +30,7 @@ EXTRA_OEMAKE = " \
     "
 
 EXTRA_OEMAKE_qemu-optee64 = " \
+    PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
     TEEC_EXPORT=${TEEC_EXPORT} \
@@ -38,6 +42,7 @@ EXTRA_OEMAKE_qemu-optee64 = " \
     "
 
 EXTRA_OEMAKE_imx8mqevk = " \
+    PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
     TEEC_EXPORT=${TEEC_EXPORT} \
@@ -49,6 +54,7 @@ EXTRA_OEMAKE_imx8mqevk = " \
     "
 
 EXTRA_OEMAKE_flex-imx8mm = " \
+    PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
     TEEC_EXPORT=${TEEC_EXPORT} \
@@ -60,6 +66,7 @@ EXTRA_OEMAKE_flex-imx8mm = " \
     "
 
 EXTRA_OEMAKE_pico-imx8mq = " \
+    PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
     TEEC_EXPORT=${TEEC_EXPORT} \
