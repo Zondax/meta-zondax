@@ -1,4 +1,4 @@
-SUMMARY = "OP-TEE hello_rustee"
+SUMMARY = "hello_rustee application"
 HOMEPAGE = "https://github.com/Zondax/hello-rustee"
 
 LICENSE = "MIT"
