@@ -17,7 +17,7 @@ SRCREV = "06e1b32f6a7028e039c625b07cfc25fda0c17d53"
 
 S = "${WORKDIR}/git"
 
-SYSTEMD_SERVICE_${PN} = "tee-supplicant.service"
+SYSTEMD_SERVICE:${PN} = "tee-supplicant.service"
 
 do_install() {
     oe_runmake install

@@ -1,4 +1,4 @@
-python do_configure_append() {
+python do_configure:append() {
     import json
 
     try:

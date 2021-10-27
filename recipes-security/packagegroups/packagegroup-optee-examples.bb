@@ -11,6 +11,6 @@ PACKAGES = "packagegroup-optee-examples"
 
 PROVIDES = "${PACKAGES}"
 
-RDEPENDS_packagegroup-optee-examples = "\
+RDEPENDS:packagegroup-optee-examples = "\
     optee-examples \
 "

@@ -45,9 +45,9 @@ do_install () {
 }
 
 # Avoid QA Issue: No GNU_HASH in the elf binary
-INSANE_SKIP_${PN} += "ldflags"
+INSANE_SKIP:${PN} += "ldflags"
 
-FILES_${PN} += "${nonarch_base_libdir}/optee_armtz/ \
+FILES:${PN} += "${nonarch_base_libdir}/optee_armtz/ \
                "
 
 # Imports machine specific configs from staging to build

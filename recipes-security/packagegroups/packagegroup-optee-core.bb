@@ -11,6 +11,6 @@ PACKAGES = "packagegroup-optee-core"
 
 PROVIDES = "${PACKAGES}"
 
-RDEPENDS_packagegroup-optee-core = "\
+RDEPENDS:packagegroup-optee-core = "\
     optee-client \
 "

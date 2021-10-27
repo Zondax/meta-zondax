@@ -11,7 +11,7 @@ PROJ_NAME = "hello-rustee"
 
 require rustee.inc
 
-do_install_append() {
+do_install:append() {
     mkdir -p ${D}${bindir}
     install -m 755 ${S}/framework/host/src/${PROJ_NAME} ${D}${bindir}/
 }

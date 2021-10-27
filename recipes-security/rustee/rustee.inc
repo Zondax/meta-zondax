@@ -88,10 +88,10 @@ do_install() {
     install -m 444 ${S}/framework/ta/src/*.ta ${D}${nonarch_base_libdir}/optee_armtz
 }
 
-FILES_${PN} += "${nonarch_base_libdir}/optee_armtz/"
+FILES:${PN} += "${nonarch_base_libdir}/optee_armtz/"
 
-INSANE_SKIP_${PN} = "ldflags"
-INSANE_SKIP_${PN}-dev = "ldflags"
+INSANE_SKIP:${PN} = "ldflags"
+INSANE_SKIP:${PN}-dev = "ldflags"
 
 # Imports machine specific configs from staging to build
 PACKAGE_ARCH = "${MACHINE_ARCH}"
