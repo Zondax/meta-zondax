@@ -10,7 +10,7 @@ inherit python3native
 
 PV = "3.14.0+git${SRCPV}"
 
-SRC_URI = "git://github.com/linaro-swg/optee_examples.git \
+SRC_URI = "git://github.com/linaro-swg/optee_examples.git;protocol=https \
            file://0001-plugins-Honour-default-cross-compiler-environment-se.patch \
            file://0002-Makefile-Enable-plugins-installation-in-rootfs.patch \
            file://0003-plugins-remove-plugin-framework-examples-for-now.patch \

@@ -8,7 +8,7 @@ inherit python3native systemd
 
 PV = "3.14.0+git${SRCPV}"
 
-SRC_URI = "git://github.com/OP-TEE/optee_client.git \
+SRC_URI = "git://github.com/OP-TEE/optee_client.git;protocol=https \
            file://tee-supplicant.service \
            file://optee \
 "
