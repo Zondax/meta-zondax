@@ -1,8 +1,8 @@
 DEPENDS = "optee-client virtual/optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
-DEPENDS_stm32mp1 = "optee-client virtual/optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
-DEPENDS_imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native python3-pycryptodomex-native libgcc"
-DEPENDS_pico-imx8mq = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
-DEPENDS_flex-imx8mm = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
+DEPENDS:stm32mp1 = "optee-client virtual/optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
+DEPENDS:imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native python3-pycryptodomex-native libgcc"
+DEPENDS:pico-imx8mq = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
+DEPENDS:flex-imx8mm = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
 
 inherit cargo python3native
 
@@ -29,7 +29,7 @@ EXTRA_OEMAKE = " \
     V=1 \
     "
 
-EXTRA_OEMAKE_qemu-optee64 = " \
+EXTRA_OEMAKE:qemu-optee64 = " \
     PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
@@ -41,7 +41,7 @@ EXTRA_OEMAKE_qemu-optee64 = " \
     V=1 \
     "
 
-EXTRA_OEMAKE_imx8mqevk = " \
+EXTRA_OEMAKE:imx8mqevk = " \
     PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
@@ -53,7 +53,7 @@ EXTRA_OEMAKE_imx8mqevk = " \
     V=1 \
     "
 
-EXTRA_OEMAKE_flex-imx8mm = " \
+EXTRA_OEMAKE:flex-imx8mm = " \
     PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
@@ -65,7 +65,7 @@ EXTRA_OEMAKE_flex-imx8mm = " \
     V=1 \
     "
 
-EXTRA_OEMAKE_pico-imx8mq = " \
+EXTRA_OEMAKE:pico-imx8mq = " \
     PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
