@@ -77,6 +77,10 @@ EXTRA_OEMAKE:pico-imx8mq = " \
     V=1 \
     "
 
+do_configure:append() {
+    ${PYTHON} ${S}/framework/ta/src/newuuid.py
+}
+
 do_compile() {
     export RUSTFLAGS="${RUSTFLAGS}"
     export RUST_TARGET_PATH="${RUST_TARGET_PATH}"
