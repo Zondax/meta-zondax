@@ -16,6 +16,9 @@ require rustee.inc
 
 inherit systemd update-rc.d
 
+PACKAGECONFIG ??= "autostart"
+PACKAGECONFIG[autostart] = ""
+
 do_install:append() {
     mkdir -p ${D}${sbindir}
     install -m 755 ${S}/framework/host/src/${PROJ_NAME} ${D}${sbindir}/
@@ -38,7 +41,9 @@ do_install:append() {
 }
 
 SYSTEMD_SERVICE:${PN} = "tee-substrate-service.service"
+SYSTEMD_AUTO_ENABLE:${PN} = "${@bb.utils.contains('PACKAGECONFIG','autostart','enable','disable',d)}"
 
 INITSCRIPT_PACKAGES = "${PN}"
 INITSCRIPT_NAME:${PN} = "tee-substrate-service"
 INITSCRIPT_PARAMS:${PN} = "start 15 1 2 3 4 5 . stop 85 0 6 ."
+INHIBIT_UPDATERCD_BBCLASS = "${@bb.utils.contains('PACKAGECONFIG','autostart','','1',d)}"
