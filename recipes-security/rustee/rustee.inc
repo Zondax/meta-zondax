@@ -1,8 +1,4 @@
 DEPENDS = "optee-client virtual/optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
-DEPENDS:stm32mp1 = "optee-client virtual/optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
-DEPENDS:imx8mqevk = "optee-client-imx optee-os-imx python3-pycrypto-native python3-pycryptodomex-native libgcc"
-DEPENDS:pico-imx8mq = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
-DEPENDS:flex-imx8mm = "optee-client optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
 
 inherit cargo python3native
 
@@ -16,58 +12,12 @@ TEEC_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 
 PROJ_NAME ?= "rustee_app"
 
-# stm32mp1 or qemu_v7
+TA_DEV_KIT_DIR="${STAGING_INCDIR}/optee/export-user_ta"
+TA_DEV_KIT_DIR:mx8="${STAGING_INCDIR}/optee/export-user_ta_arm64"
+
 EXTRA_OEMAKE = " \
     PROJ_NAME=${PROJ_NAME} \
-    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
-    OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
-    TEEC_EXPORT=${TEEC_EXPORT} \
-    HOST_CROSS_COMPILE=${TARGET_PREFIX} \
-    TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    RUST_TARGET=${TARGET_SYS} \
-    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
-    V=1 \
-    "
-
-EXTRA_OEMAKE:qemu-optee64 = " \
-    PROJ_NAME=${PROJ_NAME} \
-    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
-    OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
-    TEEC_EXPORT=${TEEC_EXPORT} \
-    HOST_CROSS_COMPILE=${TARGET_PREFIX} \
-    TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    RUST_TARGET=${TARGET_SYS} \
-    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
-    V=1 \
-    "
-
-EXTRA_OEMAKE:imx8mqevk = " \
-    PROJ_NAME=${PROJ_NAME} \
-    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
-    OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
-    TEEC_EXPORT=${TEEC_EXPORT} \
-    HOST_CROSS_COMPILE=${TARGET_PREFIX} \
-    TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    RUST_TARGET=${TARGET_SYS} \
-    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
-    V=1 \
-    "
-
-EXTRA_OEMAKE:flex-imx8mm = " \
-    PROJ_NAME=${PROJ_NAME} \
-    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
-    OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
-    TEEC_EXPORT=${TEEC_EXPORT} \
-    HOST_CROSS_COMPILE=${TARGET_PREFIX} \
-    TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    RUST_TARGET=${TARGET_SYS} \
-    LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
-    V=1 \
-    "
-
-EXTRA_OEMAKE:pico-imx8mq = " \
-    PROJ_NAME=${PROJ_NAME} \
-    TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta_arm64 \
+    TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR} \
     OPTEE_CLIENT_EXPORT=${OPTEE_CLIENT_EXPORT} \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
