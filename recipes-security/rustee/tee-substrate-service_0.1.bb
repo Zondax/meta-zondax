@@ -4,11 +4,11 @@ HOMEPAGE = "https://github.com/Zondax/tee-substrate-service"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-SRC_URI = "gitsm://github.com/Zondax/tee-substrate-service.git;branch=feature/substrate;protocol=https \
+SRC_URI = "gitsm://github.com/Zondax/tee-substrate-service.git;branch=master;lfs=0;protocol=https \
            file://tee-substrate-service.service \
            file://tee-substrate-service \
 "
-SRCREV = "feature/substrate"
+SRCREV = "master"
 
 PROJ_NAME = "tee-substrate-service"
 
