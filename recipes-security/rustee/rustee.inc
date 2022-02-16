@@ -27,9 +27,9 @@ EXTRA_OEMAKE = " \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=${TARGET_SYS} \
     LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
-    TA_SIGN_KEY=${TOPDIR}/../../keys/optee/optee_priv_key.pem \
-    TA_PUB_KEY=${TOPDIR}/../../keys/optee/optee_pub_key.pem \
-    SIGN_TA=1 \
+    TA_SIGN_KEY=${TA_CUSTOM_PRIVKEY} \
+    TA_PUB_KEY=${TA_CUSTOM_PUBKEY} \
+    SIGN_TA=${ENABLE_TA_SIGNING} \
     V=1 \
     "
 
