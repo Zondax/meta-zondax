@@ -1,9 +1,7 @@
 DEPENDS = "optee-client virtual/optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
 DEPENDS += "dtc-native python3-pyelftools-native python3-cryptography-native coreutils-native"
 
-inherit cargo
-inherit deploy python3native
-
+inherit cargo-bin python3native
 
 S = "${WORKDIR}/git"
 B = "${S}"
