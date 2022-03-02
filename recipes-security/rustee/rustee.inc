@@ -13,6 +13,9 @@ TEEC_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 
 PROJ_NAME ?= "rustee_app"
 
+RUST_TARGET:arm = "armv7-unknown-linux-gnueabihf"
+RUST_TARGET:aarch64 = "aarch64-unknown-linux-gnu"
+
 TA_DEV_KIT_DIR="${STAGING_INCDIR}/optee/export-user_ta"
 TA_DEV_KIT_DIR:mx8="${STAGING_INCDIR}/optee/export-user_ta_arm64"
 
@@ -27,7 +30,7 @@ EXTRA_OEMAKE = " \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    RUST_TARGET=${TARGET_SYS} \
+    RUST_TARGET=${RUST_TARGET} \
     LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
     TA_SIGN_KEY=${TA_CUSTOM_PRIVKEY} \
     TA_PUB_KEY=${TA_CUSTOM_PUBKEY} \
