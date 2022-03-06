@@ -13,9 +13,6 @@ TEEC_EXPORT = "${STAGING_DIR_HOST}${prefix}"
 
 PROJ_NAME ?= "rustee_app"
 
-RUST_TARGET:arm = "armv7-unknown-linux-gnueabihf"
-RUST_TARGET:aarch64 = "aarch64-unknown-linux-gnu"
-
 TA_DEV_KIT_DIR="${STAGING_INCDIR}/optee/export-user_ta"
 TA_DEV_KIT_DIR:mx8="${STAGING_INCDIR}/optee/export-user_ta_arm64"
 
