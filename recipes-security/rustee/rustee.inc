@@ -18,6 +18,10 @@ PROJ_NAME ?= "rustee_app"
 TA_DEV_KIT_DIR="${STAGING_INCDIR}/optee/export-user_ta"
 TA_DEV_KIT_DIR:mx8="${STAGING_INCDIR}/optee/export-user_ta_arm64"
 
+ENABLE_TA_SIGNING ?= "0"
+TA_CUSTOM_PRIVKEY ?= ""
+TA_CUSTOM_PUBKEY ?= ""
+
 EXTRA_OEMAKE = " \
     PROJ_NAME=${PROJ_NAME} \
     TA_DEV_KIT_DIR=${TA_DEV_KIT_DIR} \
