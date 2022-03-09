@@ -1,9 +1,7 @@
 DEPENDS = "optee-client virtual/optee-os python3-pycrypto-native python3-pycryptodomex-native libgcc"
 DEPENDS += "dtc-native python3-pyelftools-native python3-cryptography-native coreutils-native"
 
-inherit cargo
-inherit deploy python3native
-
+inherit cargo_bin python3native
 
 S = "${WORKDIR}/git"
 B = "${S}"
@@ -29,7 +27,7 @@ EXTRA_OEMAKE = " \
     TEEC_EXPORT=${TEEC_EXPORT} \
     HOST_CROSS_COMPILE=${TARGET_PREFIX} \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
-    RUST_TARGET=${TARGET_SYS} \
+    RUST_TARGET=${RUST_TARGET} \
     LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
     TA_SIGN_KEY=${TA_CUSTOM_PRIVKEY} \
     TA_PUB_KEY=${TA_CUSTOM_PUBKEY} \
