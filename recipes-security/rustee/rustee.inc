@@ -31,9 +31,9 @@ EXTRA_OEMAKE = " \
     LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
     TA_SIGN_KEY=${TA_CUSTOM_PRIVKEY} \
     TA_PUB_KEY=${TA_CUSTOM_PUBKEY} \
-    SIGN_TA=${ENABLE_TA_SIGNING} \
     V=1 \
     "
+EXTRA_OEMAKE += "${@bb.utils.contains('ENABLE_TA_SIGNING', '1', 'SIGN_TA=1', '', d)}"
 
 do_configure:append() {
     ${PYTHON} ${S}/framework/ta/src/newuuid.py
