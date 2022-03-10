@@ -3,6 +3,7 @@ DEPENDS += "dtc-native python3-pyelftools-native python3-cryptography-native cor
 
 inherit cargo_bin python3native
 
+
 S = "${WORKDIR}/git"
 B = "${S}"
 
@@ -29,12 +30,8 @@ EXTRA_OEMAKE = " \
     TA_CROSS_COMPILE=${TARGET_PREFIX} \
     RUST_TARGET=${RUST_TARGET} \
     LIBGCC_LOCATE_CFLAGS='--sysroot=${STAGING_DIR_HOST}' \
-    TA_SIGN_KEY=${TA_CUSTOM_PRIVKEY} \
-    TA_PUB_KEY=${TA_CUSTOM_PUBKEY} \
     V=1 \
     "
-EXTRA_OEMAKE += "${@bb.utils.contains('ENABLE_TA_SIGNING', '1', 'SIGN_TA=1', '', d)}"
-
 do_configure:append() {
     ${PYTHON} ${S}/framework/ta/src/newuuid.py
 }
@@ -42,6 +39,11 @@ do_configure:append() {
 do_compile() {
     export RUSTFLAGS="${RUSTFLAGS}"
     export RUST_TARGET_PATH="${RUST_TARGET_PATH}"
+    if [ "${ENABLE_TA_SIGNING}" = "1" ]; then
+        export SIGN_TA=1
+        export TA_SIGN_KEY="${TA_CUSTOM_PRIVKEY}"
+        export TA_PUB_KEY="${TA_CUSTOM_PUBKEY}"
+    fi
     oe_runmake
 }
 
